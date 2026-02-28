@@ -1,4 +1,4 @@
-## Hand Gesture Classification (Notebook)
+## Hand Gesture Classification 
 
 This project is implemented **only in the notebook** `ML_Project.ipynb`. It trains and evaluates scikit‑learn models on a CSV of **MediaPipe hand landmarks** and includes a notebook section that runs **video inference** with MediaPipe Hands + OpenCV, overlaying the predicted gesture and confidence.
 
