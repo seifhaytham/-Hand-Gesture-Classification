@@ -1,3 +1,4 @@
 landmark/
 *.pkl
 *.mp4
+.cursor

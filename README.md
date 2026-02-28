@@ -1,83 +1,104 @@
-# Hand Gesture Classification
+## Hand Gesture Classification (Notebook)
 
-This repository implements a complete pipeline for training and evaluating hand‑gesture classifiers, then applying a trained model to annotate video files. It uses **MediaPipe** to extract 21 hand landmarks per frame, and **scikit‑learn** classifiers (Random Forest, SVM, AdaBoost) for prediction.
+This project is implemented **only in the notebook** `ML_Project.ipynb`. It trains and evaluates scikit‑learn models on a CSV of **MediaPipe hand landmarks** and includes a notebook section that runs **video inference** with MediaPipe Hands + OpenCV, overlaying the predicted gesture and confidence.
 
-## Overview
+## What the notebook does
 
-The notebook loads a CSV dataset (`hand_landmarks_data .csv`), performs EDA and preprocessing (centering/normalizing landmarks), and fits multiple models using `GridSearchCV`. After training, it prints classification reports, plots confusion matrices, and shows precision‑recall curves for each model. The best model is saved (e.g. `random_forest_model.pkl`).
+- **Dataset**: A CSV containing 21 hand landmarks \((x,y,z)\) per sample plus a `label`. The expected columns are:
+  - `x1,y1,z1, x2,y2,z2, ... , x21,y21,z21, label`
+- **Classes (18)**:
+  - `call`, `dislike`, `fist`, `four`, `like`, `mute`, `ok`, `one`, `palm`,
+    `peace`, `peace_inverted`, `rock`, `stop`, `stop_inverted`, `three`, `three2`, `two_up`, `two_up_inverted`
+- **Preprocessing**: Re-centers landmarks at the wrist and normalizes coordinates relative to the middle-finger tip (per the notebook’s `preprocess_landmarks`).
+- **Training / tuning**: Uses `GridSearchCV` to tune and compare:
+  - Random Forest
+  - SVM
+  - AdaBoost
+- **Evaluation**: Prints classification metrics and displays confusion matrices.
+- **Model export**: Saves the best model with `joblib`.
+- **Video demo**: The notebook class `GestureInference` loads the saved model, runs MediaPipe Hands on a video, and draws:
+  - Hand landmarks using **MediaPipe drawing utilities**
+  - Gesture label + confidence
+  - Writes an annotated output video (default `gesture_demo.mp4`)
 
-The `gesture_video_inference.py` script loads a saved model and processes a video file frame‑by‑frame, drawing the detected hand skeleton and predicted gesture with a confidence score. Results are written to a new output video.
+## Setup
 
-## Features
+Install dependencies:
 
-- **Video File Inference**: Annotate recorded videos with gesture predictions.
-- **18 Gesture Classes**: 
-  `call`, `dislike`, `fist`, `four`, `like`, `mute`, `ok`, `one`, `palm`,
-  `peace`, `peace_inverted`, `rock`, `stop`, `stop_inverted`, `three`, `three2`, `two_up`, `two_up_inverted`.
-- **Robust Feature Extraction**: Relative landmark coordinates normalized against wrist and middle finger tip.
-- **Model Comparison**: Train and compare Random Forest, SVM, and AdaBoost classifiers.
-- **Evaluation Visuals**: Notebook includes classification reports, confusion matrices, and precision‑recall plots for each model.
-- **Inference Smoothing**: Video script smooths predictions over a short history to reduce flicker.
-
-## Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/hand-gesture-classification.git
-   cd hand-gesture-classification
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Usage
-
-### 1. Training the Model
-
-1. Open `ML_Project.ipynb` in Jupyter.
-2. Execute cells sequentially to load data, preprocess, and train models.
-3. Review outputs:
-   - Classification reports for each classifier.
-   - Confusion matrices plotted with `ConfusionMatrixDisplay`.
-   - Precision‑recall curves generated with `PrecisionRecallDisplay`.
-4. The notebook saves the selected `random_forest_model.pkl` (or whichever estimator you choose).
-
-### 2. Video Inference
-
-Edit the `main()` section of `gesture_video_inference.py` to match your file locations:
-
-```python
-PROJECT_DIR = Path(__file__).parent
-model_path = Path(r"C:\Users\Dell\Desktop\ml-project\random_forest_model.pkl")
-video_file = Path(r"C:\Users\Dell\Pictures\Camera Roll\WIN_20260225_12_13_12_Pro.mp4")
-
-inference = GestureInference(str(model_path), smoothing_window=3)
-result_path = inference.process_video(
-    str(video_file),
-    str(PROJECT_DIR / "gesture_demo.mp4"),
-    skip_frames=2  # process every 2nd frame for speed
-)
-```
-
-Parameters you can tweak:
-- `smoothing_window`: number of recent frames used to average the prediction.
-- `skip_frames`: process every *n*‑th frame to speed up inference.
-
-Run the script:
 ```bash
-python gesture_video_inference.py
+pip install -r requirements.txt
 ```
-An output video (`gesture_demo.mp4` by default) will be created along with console logs showing progress.
 
-## Project Structure
+## How to run
 
-- `ML_Project.ipynb` – notebook covering data loading, training, and evaluation.
-- `gesture_video_inference.py` – inference script for video processing.
-- `requirements.txt` – Python dependencies.
-- `hand_landmarks_data .csv` – dataset of landmarks and labels.
-- `random_forest_model.pkl` – placeholder for the saved classifier.
-- `gesture_demo.mp4` – example output video with annotated gestures.
+### Prerequisites
+
+- Python 3.11 with Jupyter (or VS Code, Colab, etc.).
+- Dependencies installed: `pip install -r requirements.txt`
+- Your hand landmarks CSV file (columns: `x1,y1,z1` … `x21,y21,z21`, `label`).
+
+---
+
+### Part 1: Training the model
+
+1. **Open the notebook**  
+   Open `ML_Project.ipynb` in Jupyter Notebook, JupyterLab, or VS Code.
+
+2. **Set the data path**  
+   In the cell that loads the CSV, update the path to your dataset:
+   ```python
+   df = pd.read_csv(r"C:\path\to\your\hand_landmarks_data.csv")
+   ```
+   The notebook expects columns `x1`–`x21`, `y1`–`y21`, `z1`–`z21`, and `label`.
+
+3. **Run all cells up to and including training**  
+   Execute cells in order:
+   - Imports and constants
+   - Load data and EDA
+   - Preprocessing (feature extraction, train/test split)
+   - Model training (Random Forest, SVM, AdaBoost with `GridSearchCV`)
+   - Evaluation (classification reports, confusion matrices)
+   - Model save: `joblib.dump(rf, 'random_forest_model.pkl')`
+
+4. **Check the saved model**  
+   After the save cell runs, `random_forest_model.pkl` should appear in the notebook’s working directory (usually the project folder).
+
+---
+
+### Part 2: Video inference demo
+
+1. **Run the `GestureInference` class cell**  
+   Execute the cell that defines the `GestureInference` class (it uses MediaPipe Hands and the drawing utilities).
+
+2. **Configure paths in `main()`**  
+   In the cell that defines and calls `main()`, set:
+   - **`model_path`**: Path to the saved model. By default it uses `PROJECT_DIR / "random_forest_model.pkl"`, so if the model is in the same folder as the notebook, no change is needed.
+   - **`video_file`**: Path to your input video, e.g.:
+     ```python
+     video_file = Path(r"C:\Users\You\Videos\my_hand_video.mp4")
+     ```
+   - **`output_file`**: Default is `PROJECT_DIR / "gesture_demo.mp4"`. Change this if you want a different output path.
+
+
+
+4. **Run the `main()` cell**  
+   Execute the cell that calls `main()`. The notebook will:
+   - Load the model
+   - Open the video
+   - Run MediaPipe Hands on each frame
+   - Draw hand landmarks and the predicted gesture with confidence
+   - Write the annotated video to `gesture_demo.mp4` (or your chosen path)
+
+
+---
+
+
+
+## Files
+
+- `ML_Project.ipynb`: training, evaluation, and video inference demo
+- `requirements.txt`: dependencies used by the notebook
+- `random_forest_model.pkl`: model saved by the notebook (created after training)
+
 
 
