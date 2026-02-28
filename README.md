@@ -43,13 +43,7 @@ Provides the following utilities:
 - `log_dataset_info()`, `log_model_run()`, `log_confusion_matrix_figure()`, `log_comparison_chart()` – logging helpers.
 - `register_best_model()` – register a model build from a completed run.
 
-## Important Notes
-
-- Ensure the dataset path in the notebook (`DATASET_PATH`) is correct before running cells.
-- The MLflow tracking URI is set in `mlflow_utils.setup_experiment`; modify if using a remote server.
-- Deleting the `mlruns` directory will clear previous runs, and the notebook includes code to remove it at the start.
-
-## Design Choices
+  ## Design Choices
 
 - **Model selection:** Random Forest, SVM and AdaBoost were chosen to cover complementary algorithm families — tree-based ensembles (Random Forest), kernel methods (SVM) and boosting (AdaBoost). This gives a quick, pragmatic comparison between robust, high-bias/low-variance and high-variance/low-bias approaches.
 - **Preprocessing:** Coordinates are re-centered and normalized relative to the wrist and mid-finger tip to remove translation and scale variations between samples, improving invariance to hand position and size.
@@ -57,10 +51,5 @@ Provides the following utilities:
 - **Metrics:** We log `test_accuracy` alongside macro and weighted F1/precision/recall to capture both overall correctness and per-class performance (useful when classes are imbalanced).
 - **MLflow choices:** Local MLflow UI (`http://127.0.0.1:5000`) and a file-backed `mlruns` store are used for simple reproducibility and artifact inspection during development. Models and artifacts are logged per-run and the best model is registered to the Model Registry for later deployment.
 
-## Contributing
 
-Feel free to extend the notebook and utilities with additional models, evaluation metrics, or datasets. Create an issue or pull request for improvements.
 
----
-
-This README provides a high-level guide for understanding and using the hand landmarks classification project with MLflow.
